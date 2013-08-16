@@ -188,11 +188,24 @@ module MotionResource
             if relationJson.is_a?(Hash) && relationJson.has_key?("type") && relationJson.has_key?(relationJson['type']) && relationJson[relationJson['type']].present?
               klass = Object.const_get(relationJson['type'].to_s.singularize.camelize)
               newRelation = klass.updateModels(relationJson[relationJson['type']])
+              if newRelation.is_a?(Array)
+                newRelation.each do |newRel|
+                  self.send("#{relationJson['type']}").send("<<", newRel) rescue NoMethodError # not correct implemented in MotionModel
+                end
+              else
+                self.send("#{relationJson['type']}=", newRelation) rescue NoMethodError # not correct implemented in MotionModel
+              end
             else
               klass = Object.const_get(relation.to_s.singularize.camelize)
               newRelation = klass.updateModels(modelJson["#{relation}"])
+              if newRelation.is_a?(Array)
+                newRelation.each do |newRel|
+                  self.send("#{relation}").send("<<", newRel) rescue NoMethodError # not correct implemented in MotionModel
+                end
+              else
+                self.send("#{relation}", newRelation) rescue NoMethodError # not correct implemented in MotionModel
+              end
             end
-            self.send("#{relation}=", newRelation) rescue NoMethodError # not correct implemented in MotionModel
           end
         end
       end

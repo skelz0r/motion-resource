@@ -170,6 +170,7 @@ module MotionResource
 
     # Wraps the current model with the given JSON.
     # All the fields found in JSON and self.wrapper will be parsed.
+    # Can handle polymorphic associations render by ActiveModel::Serializers
     # Returns true, when no error exists
     def wrap(modelJson)
       return unless self.class.respond_to?(:wrapper)
@@ -183,8 +184,14 @@ module MotionResource
       if self.class.wrapper[:relations].present?
         self.class.wrapper[:relations].each do |relation|
           if modelJson.respond_to?("key?") && modelJson.key?("#{relation}") && modelJson["#{relation}"].present?
-            klass = Object.const_get(relation.to_s.singularize.camelize)
-            newRelation = klass.updateModels(modelJson["#{relation}"])
+            relationJson = modelJson[relation]
+            if relationJson.is_a?(Hash) && relationJson.has_key?("type") && relationJson.has_key?(relationJson['type']) && relationJson[relationJson['type']].present?
+              klass = Object.const_get(relationJson['type'].to_s.singularize.camelize)
+              newRelation = klass.updateModels(relationJson[relationJson['type']])
+            else
+              klass = Object.const_get(relation.to_s.singularize.camelize)
+              newRelation = klass.updateModels(modelJson["#{relation}"])
+            end
             self.send("#{relation}=", newRelation) rescue NoMethodError # not correct implemented in MotionModel
           end
         end

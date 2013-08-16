@@ -53,6 +53,17 @@ Tune this up, by adding:
 ```
 The wrapper hash has two main keys. The first one is "fields". Here you specify the local and remote keys, you want to have from your API response. The hash-key is the remote key and the hash-value is the local key. It is used, if you have different names in your implementation (maybe camelcase with underscore).
 The second key in the main hash is the "relations" part. Here you can specify the wanted relations from your remote response. It will automatacally look after the right relation, for example if you have a relation "tasks", and the response is an array, it will create a bunch of tasks for you.
+*NB*: This relation can be a polymorphic association, render with an
+ActiveModel::Serializer style:
+```ruby
+{
+  :type => :task,
+  :task => {
+    :id => 1,
+    :name => "Drink rhum, code hard"
+  }
+}
+```
 
 The url method will be used for saving a remote model. Maybe in future for a routes prefix.
 

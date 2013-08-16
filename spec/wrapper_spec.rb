@@ -27,7 +27,7 @@ class User
         age:      :age,
         admin:    :admin
       },
-      relations: [:tasks, :plan]
+      relations: [:tasks, :plan, :document]
     }
   end
 
@@ -121,7 +121,7 @@ describe "Fetching a model" do
     end
   end
 
-  it "should create a new model with dependencies" do
+  it "should create a new model with dependencies, with one polymorphic" do
     User.delete_all
     Task.delete_all
     Plan.delete_all
@@ -149,6 +149,14 @@ describe "Fetching a model" do
       plan: {
         id: 5,
         name: 'Gold'
+      },
+      document: {
+        type: :task,
+        task: {
+          id: 6,
+          name: "Drink rhum, code hard",
+          user_id: 10
+        }
       }
     })
 
@@ -159,12 +167,12 @@ describe "Fetching a model" do
     wait_max 1.0 do
       User.count.should.equal(1)
       Plan.count.should.equal(1)
-      Task.count.should.equal(2)
+      Task.count.should.equal(3)
 
       user = User.find(10)
       user.plan.name.should.equal("Gold")
       user.tasks.first.name.should.equal("Cleaning up the closet")
-      user.tasks.last.name.should.equal("Drinking soda")
+      user.tasks.last.name.should.equal("Drink rhum, code hard")
     end
   end
 end
